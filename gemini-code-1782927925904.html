@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoMind — Sharp Decision Intelligence</title>
+    <style>
+        :root {
+            --bg-pure-black: #000000;
+            --bg-dark-gray: #0D0D0D;
+            --bg-card: #141414;
+            --border-color: #222222;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0A0;
+            --accent-green: #00FF66;
+            --accent-yellow: #FFCC00;
+            --accent-red: #FF3333;
+            --accent-blue: #0066FF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-pure-black);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* App Container Wrapper */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background-color: var(--bg-dark-gray);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                height: 85vh;
+                border-radius: 16px;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            }
+        }
+
+        /* Header Layout */
+        header {
+            padding: 16px;
+            background-color: var(--bg-pure-black);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-icon {
+            font-size: 1.2rem;
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.5px;
+        }
+
+        .status-badge {
+            background-color: rgba(0, 255, 102, 0.1);
+            color: var(--accent-green);
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(0, 255, 102, 0.2);
+        }
+
+        /* Depth Slider Controller UI */
+        .slider-section {
+            background: rgba(255,255,255,0.02);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slider-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .depth-range {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: #333;
+            outline: none;
+        }
+
+        .depth-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            cursor: not-allowed;
+            transition: background 0.3s ease;
+        }
+
+        .slider-status-text {
+            font-size: 0.8rem;
+            font-weight: 700;
+            min-width: 65px;
+            text-align: right;
+        }
+
+        .status-gentle { color: var(--accent-green); }
+        .status-medium { color: var(--accent-yellow); }
+        .status-brutal { color: var(--accent-red); }
+
+        /* Chat Display Workspace */
+        .chat-space {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background-color: var(--bg-pure-black);
+            scroll-behavior: smooth;
+        }
+
+        .chat-space::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-space::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        .msg-row {
+            display: flex;
+            width: 100%;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .msg-row.bot { justify-content: flex-start; }
+        .msg-row.user { justify-content: flex-end; }
+
+        .bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            word-wrap: break-word;
+        }
+
+        .bot .bubble {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-top-left-radius: 2px;
+        }
+
+        .user .bubble {
+            background-color: var(--text-primary);
+            color: var(--bg-pure-black);
+            border-top-right-radius: 2px;
+            font-weight: 500;
+        }
+
+        /* Interactive Dynamic Styling Elements */
+        .system-alert {
+            background: rgba(255, 51, 51, 0.08);
+            border-left: 3px solid var(--accent-red);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .stakeholder-quote {
+            background: rgba(0, 102, 255, 0.08);
+            border-left: 3px solid var(--accent-blue);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .case-scenario {
+            padding: 8px;
+            margin-top: 6px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.03);
+            font-size: 0.85rem;
+        }
+
+        /* Final Metric Stress Report Layout */
+        .report-card {
+            background: var(--bg-card);
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .report-header {
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .report-section {
+            margin-bottom: 14px;
+        }
+
+        .report-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .report-list {
+            list-style: none;
+            padding-left: 4px;
+        }
+
+        .report-list li {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        /* Footer Input Panel */
+        footer {
+            padding: 16px;
+            background-color: var(--bg-pure-black);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-box-wrapper {
+            display: flex;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 4px 6px 4px 16px;
+            align-items: center;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-box-wrapper:focus-within {
+            border-color: #444444;
+        }
+
+        .input-field {
+            flex-grow: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            padding: 8px 0;
+            outline: none;
+        }
+
+        .input-field::placeholder {
+            color: #555555;
+        }
+
+        .send-btn {
+            background-color: var(--text-primary);
+            color: var(--bg-pure-black);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .send-btn:active {
+            transform: scale(0.92);
+        }
+
+        .send-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Quick Hint Guide Anchor */
+        .hint-bar {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .hint-trigger {
+            color: var(--accent-blue);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="header-main">
+                <div class="brand">
+                    <span class="brand-icon">🧠</span>
+                    <span class="brand-name">EchoMind</span>
+                </div>
+                <div class="status-badge" id="bot-status">Socratic Engine Active</div>
+            </div>
+            
+            <div class="slider-section">
+                <div class="slider-meta">
+                    <span>DEVIL'S ADVOCATE DEPTH SLIDER</span>
+                    <span class="slider-status-text status-gentle" id="slider-label">🟢 GENTLE</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="1" max="3" value="1" class="depth-range" id="depthSlider" disabled>
+                </div>
+            </div>
+        </header>
+
+        <div class="chat-space" id="chatSpace">
+            <div class="msg-row bot">
+                <div class="bubble">
+                    <strong>Welcome to EchoMind.</strong><br><br>
+                    I am not built to cheer you on blindly. I am programmed to challenge your execution strategy to ensure you survive the market reality.<br><br>
+                    To launch the automated simulation, enter your premise:<br>
+                    <span style="color: var(--accent-yellow);">"I am going to quit my job and start a new restaurant."</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="input-box-wrapper">
+                <input type="text" class="input-field" id="userInput" placeholder="Type your decision here..." autocomplete="off">
+                <button class="send-btn" id="sendBtn" aria-label="Send Message">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="hint-bar">
+                Quick Action: <span class="hint-trigger" onclick="injectTriggerText()">Auto-Fill Blueprint Premise</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const chatSpace = document.getElementById('chatSpace');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const depthSlider = document.getElementById('depthSlider');
+        const sliderLabel = document.getElementById('slider-label');
+        const botStatus = document.getElementById('bot-status');
+
+        let currentStep = 0;
+        let userData = {
+            emotionRating: '',
+            cookingSkillClaim: '',
+            operationalPlan: '',
+            partnerFeedback: '',
+            pressureChoice: '',
+            finalReflection: ''
+        };
+
+        // UI Utility Event Hooks
+        function injectTriggerText() {
+            userInput.value = "I am going to quit my job and start a new restaurant";
+            userInput.focus();
+        }
+
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleOutgoingText();
+        });
+        sendBtn.addEventListener('click', handleOutgoingText);
+
+        function updateSliderUI(level) {
+            depthSlider.value = level;
+            if (level === 1) {
+                sliderLabel.textContent = "🟢 GENTLE";
+                sliderLabel.className = "slider-status-text status-gentle";
+            } else if (level === 2) {
+                sliderLabel.textContent = "🟡 MEDIUM";
+                sliderLabel.className = "slider-status-text status-medium";
+            } else if (level === 3) {
+                sliderLabel.textContent = "🔴 BRUTAL";
+                sliderLabel.className = "slider-status-text status-brutal";
+            }
+        }
+
+        function printMessage(sender, htmlContent) {
+            const row = document.createElement('div');
+            row.classList.add('msg-row', sender);
+            
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.innerHTML = htmlContent;
+            
+            row.appendChild(bubble);
+            chatSpace.appendChild(row);
+            chatSpace.scrollTop = chatSpace.scrollHeight;
+        }
+
+        function handleOutgoingText() {
+            const rawText = userInput.value.trim();
+            if (!rawText) return;
+
+            printMessage('user', rawText);
+            userInput.value = '';
+
+            // Engine Pipeline Process Core Strategy Switch
+            setTimeout(() => {
+                processEngineStep(rawText);
+            }, 700);
+        }
+
+        // Conversational Socratic Pipeline Automation
+        function processEngineStep(text) {
+            const lowerText = text.toLowerCase();
+
+            // STEP 0: Look for trigger keywords to initialize the blueprint simulation
+            if (currentStep === 0) {
+                if (lowerText.includes('quit') && (lowerText.includes('restaurant') || lowerText.includes('hotel') || lowerText.includes('job'))) {
+                    currentStep = 1;
+                    botStatus.textContent = "Analyzing Emotions...";
+                    printMessage('bot', `
+                        <strong>STEP 1 — 🎭 Emotional State Detection</strong><br><br>
+                        Before we cross-examine the business mechanics, how are you feeling about this decision right now?<br><br>
+                        Rate your confidence/excitement level from <strong>1 to 10</strong>.
+                    `);
+                } else {
+                    printMessage('bot', `I'm ready to evaluate your strategic direction. To explore the target architecture framework, please type: <em>"I am going to quit my job and start a new restaurant."</em>`);
+                }
+                return;
+            }
+
+            // STEP 1: Process Emotional Scale Evaluation input
+            if (currentStep === 1) {
+                userData.emotionRating = text;
+                currentStep = 2;
+                updateSliderUI(2);
+                botStatus.textContent = "Socratic Debate...";
+                printMessage('bot', `
+                    <strong>STEP 2 — ⚔️ Socratic Debate Begins</strong><br><br>
+                    <div class="system-alert">⚠️ System Reading: Confidence registered at ${userData.emotionRating}/10. High emotional charge detected. Excitement typically masks functional vulnerabilities.</div>
+                    Statistical tracking shows that roughly <strong>90% of independent restaurants fail</strong> within their initial 12 months.<br><br>
+                    What empirical indicators or unique assets make you absolutely certain you belong in the surviving 10%?
+                `);
+                return;
+            }
+
+            // STEP 2: Process Value Proposition / Capability verification
+            if (currentStep === 2) {
+                userData.cookingSkillClaim = text;
+                currentStep = 3;
+                updateSliderUI(3); // Elevating to Brutal Depth Challenge
+                botStatus.textContent = "Stress Escalation...";
+                printMessage('bot', `
+                    <strong>STEP 3 — 🎛️ Depth Slider Shift</strong><br><br>
+                    <em>[System Notice: Depth configuration forced to 🔴 BRUTAL MODE based on structural assumptions]</em><br><br>
+                    Being a talented cook or hospitality enthusiast is a creative art. Running a restaurant enterprise is a game of dry logistics, aggressive raw margin manipulation, supply chains, HR compliance, and cold cash flow variance.<br><br>
+                    Which of those business operational roles have you successfully audited or scaled before? Walk me through what happens to your runway if your assumptions are wrong.
+                `);
+                return;
+            }
+
+            // STEP 3: Process Operational Capacity / Risk Contingency plan
+            if (currentStep === 3) {
+                userData.operationalPlan = text;
+                currentStep = 4;
+                botStatus.textContent = "Auditing Stakeholders...";
+                printMessage('bot', `
+                    <strong>STEP 4 — 👥 Stakeholder Voice Emulation</strong><br><br>
+                    Who does this financial disruption threaten besides yourself? Let's voice-simulate a primary stakeholder (your spouse/partner/family):<br>
+                    <div class="stakeholder-quote">
+                        "I want you to fulfill your professional dreams. But commercial properties demand structural rent guarantees, and restaurants average 80-hour workweeks. If we lose your predictable paycheck, are you expecting me to carry our basic cost of living while you live at the business?"
+                    </div>
+                    Have you put real numbers on the table with your dependents, or are you hoping things just clean themselves up?
+                `);
+                return;
+            }
+
+            // STEP 4: Process Stakeholder Alignment feedback
+            if (currentStep === 4) {
+                userData.partnerFeedback = text;
+                currentStep = 5;
+                botStatus.textContent = "Time Pressure Active...";
+                printMessage('bot', `
+                    <strong>STEP 5 — ⏳ Tactical Time Pressure Simulator</strong><br><br>
+                    <strong>CRITICAL IN-LINE EVENT:</strong> Your executive manager just discovered you are shopping for real estate options. To prevent losing you, corporate drops an unexpected promotion offer on your desk tomorrow:<br><br>
+                    <strong>A 40% salary hike, equity bonuses, and remote flexibility</strong>—but it requires a signed 2-year non-compete extension.<br><br>
+                    You have moments to lock this in before it expires. Do you choose the guaranteed corporate bump, or do you dive straight into restaurant debt?
+                `);
+                return;
+            }
+
+            // STEP 5: Process Executive Risk Tolerance Evaluation choice
+            if (currentStep === 5) {
+                userData.pressureChoice = text;
+                currentStep = 6;
+                botStatus.textContent = "Forecasting Outcomes...";
+                printMessage('bot', `
+                    <strong>STEP 6 — 📅 Future Regret Engine Simulation</strong><br><br>
+                    Let's compute three chronological projection profiles 3 years from today based on your stress metrics:<br>
+                    <div class="case-scenario" style="border-left: 3px solid var(--accent-green);">
+                        <strong>🟢 OPTIMAL CASE:</strong> You survive the initial burn rate, working 15-hour days. You break even by month 14 and build local brand equity. You are exhausted but free.
+                    </div>
+                    <div class="case-scenario" style="border-left: 3px solid var(--accent-yellow);">
+                        <strong>🟡 LINEAR AVERAGE CASE:</strong> Thin margins require you to act as Head Chef, Janitor, and Accountant. You pull a lower net yield than your past salary with zero personal life.
+                    </div>
+                    <div class="case-scenario" style="border-left: 3px solid var(--accent-red);">
+                        <strong>🔴 CRITICAL BREAK CASE:</strong> A major appliance breaks down alongside unexpected local competition. Capital dries up by month 9. You exit with substantial liability debt and a career gap.
+                    </div><br>
+                    Reviewing these realities, do you execute immediate exit plans, or do you pivot to a staged, lower-risk launch strategy?
+                `);
+                return;
+            }
+
+            // STEP 6: Compile Final Strategic Reasoning Stress Profile Metric
+            if (currentStep === 6) {
+                userData.finalReflection = text;
+                currentStep = 7;
+                updateSliderUI(1);
+                botStatus.textContent = "Report Completed";
+                
+                // Constructing the final structured Markdown/HTML dashboard representation
+                const reportHTML = `
+                    <div class="report-card">
+                        <div class="report-header">ECHOMIND STRESS REPORT</div>
+                        
+                        <div class="report-section">
+                            <div class="report-title" style="color: var(--accent-green);">✅ LOGIC STABILITY MARGINS</div>
+                            <ul class="report-list">
+                                <li>• High authentic vision & raw interest identified.</li>
+                                <li>• Acknowledges creative capability limits.</li>
+                            </ul>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-title" style="color: var(--accent-yellow);">⚠️ IDENTIFIED EXPOSURE POINTS</div>
+                            <ul class="report-list">
+                                <li>• Margin operations calculated on enthusiasm over real data infrastructure.</li>
+                                <li>• Operational fallback capital planning remains abstract.</li>
+                            </ul>
+                        </div>
+
+                        <div class="report-section">
+                            <div class="report-title" style="color: var(--accent-red);">❌ REVEALED COGNITIVE BLIND SPOTS</div>
+                            <ul class="report-list">
+                                <li>• <strong>Optimism Bias:</strong> Over-indexing personal kitchen proficiency against enterprise executive systems.</li>
+                                <li>• <strong>Survivorship Bias:</strong> Focusing on regional success cases while bypassing the 90% failure statistics.</li>
+                                <li>• <strong>Dependent Risk Exposure:</strong> Moving forward without full transactional validation from core stakeholders.</li>
+                            </ul>
+                        </div>
+
+                        <div class="report-section" style="margin-bottom: 0; border-top: 1px solid #222; padding-top: 12px;">
+                            <div class="report-title" style="color: var(--accent-blue);">🏆 ENGINE RECOMMENDATION PROFILE</div>
+                            <p style="font-size: 0.85rem; color: #E0E0E0; line-height: 1.4;">
+                                <strong>DO NOT ABANDON PAYROLL IMMEDIATELY.</strong> Mitigate your exposure profile. Launch a pop-up kitchen ghost-model, build brand proof of concept, and validate operational metrics on weekends *while* maintaining current employment. Re-run analysis in 180 days.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                
+                printMessage('bot', `
+                    <strong>STEP 7 — 📊 Summary Matrix Generation Complete</strong><br><br>
+                    You initiated this conversation with a high-risk emotional impulse. EchoMind intercepted the logic pathway to isolate bias and pressure-test your structural readiness.<br><br>
+                    Here is your diagnostic breakdown:
+                `);
+                
+                setTimeout(() => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'msg-row bot';
+                    wrap.innerHTML = reportHTML;
+                    chatSpace.appendChild(wrap);
+                    chatSpace.scrollTop = chatSpace.scrollHeight;
+                }, 600);
+            }
+        }
+    </script>
+</body>
+</html>
